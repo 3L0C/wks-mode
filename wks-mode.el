@@ -45,9 +45,6 @@
 
 (defvar wks-mode-syntax-table
   (with-syntax-table (copy-syntax-table)
-    ;; main comment syntax
-    (modify-syntax-entry ?# "<")
-    (modify-syntax-entry ?\n ">")
     (modify-syntax-entry ?\\ "\\")
     (modify-syntax-entry ?\" ".")
     (syntax-table))
@@ -57,8 +54,6 @@
 ;; emacs after changing `wks-mode'.
 (setq wks-mode-syntax-table
   (let ((st (make-syntax-table)))
-    (modify-syntax-entry ?# "<" st)
-    (modify-syntax-entry ?\n ">" st)
     (modify-syntax-entry ?\\ "\\" st)
     (modify-syntax-entry ?\" "." st)
     st))
@@ -68,9 +63,6 @@
 
 (defconst wks-font-lock-keywords
   `(
-    ;; ;; Comments - TODO fix this
-    ;; (,(rx (seq (* (not (any "\\"))) (group (seq "#" (zero-or-more (not (any "\n"))) "\n"))))
-    ;;  (1 font-lock-comment-face))
     ;; Commands
     (,(rx (seq (group (seq "%{{")) (group (*? anything)) (group (seq "}}"))))
      (1 font-lock-builtin-face)
@@ -98,8 +90,10 @@
                        ;; Switch macros
                        "debug" "sort" "top" "bottom"
                        ;; String macros
-                       (seq (or "include" "fg-color" "bg-color"
-                                "bd-color" "shell" "font")
+                       (seq (or "include"
+                                "fg" "fg-key" "fg-delimiter"
+                                "fg-prefix" "fg-chord"
+                                "bg" "bd" "shell" "font")
                             (zero-or-more space)
                             (char ?\")
                             (zero-or-more (or (seq ?\\ ?\\)
@@ -108,7 +102,7 @@
                                               (not (any ?\" ?\\))))
                             (char ?\"))
                        ;; [-]Digit macros
-                       (seq (or "window-width" "window-gap")
+                       (seq (or "menu-width" "menu-gap")
                             (one-or-more space)
                             (zero-or-one "-")
                             (one-or-more digit))
@@ -138,6 +132,9 @@
     ;; Catch escaped special characters explicitly
     (,(rx (seq ?\\ (or ?\\ ?\[ ?\] ?\{ ?\} ?\# ?\" ?\: "^" ?\+ ?\( ?\))))
      (0 font-lock-type-face))
+    ;; Comments
+    (,(rx (seq (group (seq "#" (zero-or-more (not (any "\n"))) "\n"))))
+     (1 font-lock-comment-face))
     ;; Delimiters
     (,(rx (or ?\{ ?\} ?\[ ?\] ?\( ?\)))
      (0 font-lock-builtin-face))
@@ -217,9 +214,7 @@
   "Major mode for editing wks files."
   (set-syntax-table wks-mode-syntax-table)
   (setq-local font-lock-defaults '(wks-font-lock-keywords))
-  (setq-local indent-line-function 'wks-mode-indent-line)
-  (setq-local comment-start "#")
-  (setq-local comment-end ""))
+  (setq-local indent-line-function 'wks-mode-indent-line))
 
 ;; Associate `.wks' extension with `wks-mode'.
 ;;;###autoload
