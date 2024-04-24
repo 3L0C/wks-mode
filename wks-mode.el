@@ -50,14 +50,6 @@
     (syntax-table))
   "Syntax table for `wks-mode'.")
 
-;; Using `setq' to prevent the need for reloading
-;; emacs after changing `wks-mode'.
-(setq wks-mode-syntax-table
-  (let ((st (make-syntax-table)))
-    (modify-syntax-entry ?\\ "\\" st)
-    (modify-syntax-entry ?\" "." st)
-    st))
-
 (defvar wks-indent-offset 4
   "Number of spaces to use for indentation in `wks-mode'.")
 
