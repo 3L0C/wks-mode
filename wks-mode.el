@@ -45,8 +45,10 @@
 
 (defvar wks-mode-syntax-table
   (with-syntax-table (copy-syntax-table)
+    (modify-syntax-entry ?\# "<")
+    (modify-syntax-entry ?\n ">")
     (modify-syntax-entry ?\\ "\\")
-    (modify-syntax-entry ?\" ".")
+    (modify-syntax-entry ?\" "\"")
     (syntax-table))
   "Syntax table for `wks-mode'.")
 
@@ -58,8 +60,13 @@
     ;; Commands
     (,(rx (seq (group (seq "%{{")) (group (*? anything)) (group (seq "}}"))))
      (1 font-lock-builtin-face)
-     (2 font-lock-constant-face)
+     (2 font-lock-constant-face t)
      (3 font-lock-builtin-face))
+    ;; ;; Commented commands
+    ;; (,(rx (group (seq "#" (zero-or-more (or (not "%")
+    ;;                                         (seq not-newline))
+    ;;                                     "%{{" (*? anything) "}}"))))
+    ;;  (1 font-lock-comment-face t))
     ;; Hooks
     (,(rx (seq (group (seq "^"))
                (group (or "before"
@@ -108,28 +115,23 @@
                             (one-or-more space)
                             (one-or-more digit))
                             (zero-or-more (seq "." (one-or-more digit)))))))
-     (1 font-lock-preprocessor-face))
-    ;; Descriptions
-    (,(rx (seq (one-or-more
-                (or (seq ?\\ ?\")
-                    (any space)))
-               (group (char ?\")
-                      (zero-or-more (or (seq ?\\ ?\\)
-                                        (seq ?\\ ?\")
-                                        (seq ?\\ (not (any ?\" ?\\)))
-                                        (not (any ?\" ?\\))))
-                      (char ?\"))
-               (zero-or-more (any ?\: ?\%))))
-     (1 font-lock-string-face))
+     (1 font-lock-preprocessor-face t))
+    ;; Interpolations
+    (,(rx (group (seq "%(")
+                 (seq (or "key" "index" "index+1"
+                          "desc" "desc^" "desc^^"
+                          "desc," "decs,,"))
+                 (seq ")")))
+     (1 font-lock-variable-name-face t))
     ;; Catch escaped special characters explicitly
     (,(rx (seq ?\\ (or ?\\ ?\[ ?\] ?\{ ?\} ?\# ?\" ?\: "^" ?\+ ?\( ?\))))
-     (0 font-lock-type-face))
-    ;; Comments
-    (,(rx (seq (group (seq "#" (zero-or-more (not (any "\n"))) "\n"))))
-     (1 font-lock-comment-face))
+     (0 font-lock-type-face t))
     ;; Delimiters
     (,(rx (or ?\{ ?\} ?\[ ?\] ?\( ?\)))
      (0 font-lock-builtin-face))
+    ;; ;; Comments
+    ;; (,(rx (seq (group (seq "#" (zero-or-more (not (any "\n"))) "\n"))))
+    ;;  (1 font-lock-comment-face t))
     ;; Keys - Assumes a propperly formated document.
     ("." . 'font-lock-type-face)
     ;; note: order above matters, because once colored, that part won't change.
@@ -206,7 +208,9 @@
   "Major mode for editing wks files."
   (set-syntax-table wks-mode-syntax-table)
   (setq-local font-lock-defaults '(wks-font-lock-keywords))
-  (setq-local indent-line-function 'wks-mode-indent-line))
+  (setq-local indent-line-function 'wks-mode-indent-line)
+  (setq-local comment-start "#")
+  (setq-local comment-end ""))
 
 ;; Associate `.wks' extension with `wks-mode'.
 ;;;###autoload
