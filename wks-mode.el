@@ -60,7 +60,7 @@
     ;; Commands
     (,(rx (seq (group (seq "%{{")) (group (*? anything)) (group (seq "}}"))))
      (1 font-lock-builtin-face)
-     (2 font-lock-constant-face t)
+     (2 'default t)
      (3 font-lock-builtin-face))
     ;; ;; Commented commands
     ;; (,(rx (group (seq "#" (zero-or-more (or (not "%")
@@ -100,14 +100,14 @@
                                               (seq ?\\ (not (any ?\" ?\\)))
                                               (not (any ?\" ?\\))))
                             (char ?\"))
-                       ;; [-]Digit macros
+                       ;; [-]integer macros
                        (seq (or "menu-width" "menu-gap")
                             (one-or-more space)
                             (zero-or-one "-")
                             (one-or-more digit))
-                       ;; Digit macros
+                       ;; integer macros
                        (seq (or "max-columns" "border-width" "width-padding"
-                                "height-padding")
+                                "height-padding" "delay")
                             (one-or-more space)
                             (one-or-more digit))
                        ;; Digit[.digit] macros
@@ -122,10 +122,10 @@
                           "desc" "desc^" "desc^^"
                           "desc," "decs,,"))
                  (seq ")")))
-     (1 font-lock-variable-name-face t))
+     (1 font-lock-constant-face t))
     ;; Catch escaped special characters explicitly
     (,(rx (seq ?\\ (or ?\\ ?\[ ?\] ?\{ ?\} ?\# ?\" ?\: "^" ?\+ ?\( ?\))))
-     (0 font-lock-type-face t))
+     (0 font-lock-variable-name-face t))
     ;; Delimiters
     (,(rx (or ?\{ ?\} ?\[ ?\] ?\( ?\)))
      (0 font-lock-builtin-face))
@@ -133,7 +133,7 @@
     ;; (,(rx (seq (group (seq "#" (zero-or-more (not (any "\n"))) "\n"))))
     ;;  (1 font-lock-comment-face t))
     ;; Keys - Assumes a propperly formated document.
-    ("." . 'font-lock-type-face)
+    ("." . 'font-lock-variable-name-face)
     ;; note: order above matters, because once colored, that part won't change.
     ;; in general, put longer words first
     ))
