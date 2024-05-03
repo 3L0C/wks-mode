@@ -57,16 +57,39 @@
 
 (defconst wks-font-lock-keywords
   `(
-    ;; Commands
-    (,(rx (seq (group (seq "%{{")) (group (*? anything)) (group (seq "}}"))))
+    ;; Commands - with arbitrary delimiter.
+    (,(rx (seq (group-n 1 (seq "%"))
+               (group-n 2
+                 (seq
+                  (group-n 3 (not (any "{" "(" "[")))
+                  (backref 3)))
+               (group-n 4 (*? anything))
+               (group-n 5 (backref 2))))
+     (1 font-lock-builtin-face)
+     (2 font-lock-builtin-face)
+     (4 'default t)
+     (5 font-lock-builtin-face))
+    ;; Commands - with `%{{' and `}}' delimiters.
+    (,(rx (seq (group (seq "%{{"))
+               (group (*? anything))
+               (group (seq "}}"))))
      (1 font-lock-builtin-face)
      (2 'default t)
      (3 font-lock-builtin-face))
-    ;; ;; Commented commands
-    ;; (,(rx (group (seq "#" (zero-or-more (or (not "%")
-    ;;                                         (seq not-newline))
-    ;;                                     "%{{" (*? anything) "}}"))))
-    ;;  (1 font-lock-comment-face t))
+    ;; Commands - with `%((' and `))' delimiters.
+    (,(rx (seq (group (seq "%(("))
+               (group (*? anything))
+               (group (seq "))"))))
+     (1 font-lock-builtin-face)
+     (2 'default t)
+     (3 font-lock-builtin-face))
+    ;; Commands - with `%[[' and `]]' delimiters.
+    (,(rx (seq (group (seq "%[["))
+               (group (*? anything))
+               (group (seq "]]"))))
+     (1 font-lock-builtin-face)
+     (2 'default t)
+     (3 font-lock-builtin-face))
     ;; Hooks
     (,(rx (seq (group (seq "^"))
                (group (or "before"
@@ -129,9 +152,6 @@
     ;; Delimiters
     (,(rx (or ?\{ ?\} ?\[ ?\] ?\( ?\)))
      (0 font-lock-builtin-face))
-    ;; ;; Comments
-    ;; (,(rx (seq (group (seq "#" (zero-or-more (not (any "\n"))) "\n"))))
-    ;;  (1 font-lock-comment-face t))
     ;; Keys - Assumes a propperly formated document.
     ("." . 'font-lock-variable-name-face)
     ;; note: order above matters, because once colored, that part won't change.
