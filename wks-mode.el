@@ -101,8 +101,8 @@
     ;; Flags
     (,(rx (seq (group (seq ?\+))
                (group (or "keep" "close" "inherit" "execute"
-                          "ignore" "unhook" "deflag"
-                          "no-before" "no-after"
+                          "ignore" "ignore-sort" "unhook"
+                          "deflag" "no-before" "no-after"
                           "write" "sync-command"))))
      (1 'default)
      (2 font-lock-keyword-face))
