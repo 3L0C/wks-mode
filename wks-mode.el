@@ -141,9 +141,11 @@
      (1 font-lock-preprocessor-face t))
     ;; Interpolations
     (,(rx (group (seq "%(")
-                 (seq (or "key" "index" "index+1"
-                          "desc" "desc^" "desc^^"
-                          "desc," "decs,,"))
+                 (seq (or "key"
+                          "index" "index+1"
+                          "desc^^" "desc^"
+                          "desc,," "desc,"
+                          "desc"))
                  (seq ")")))
      (1 font-lock-constant-face t))
     ;; Catch escaped special characters explicitly
