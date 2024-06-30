@@ -112,9 +112,9 @@
                        ;; Switch macros
                        "debug" "sort" "top" "bottom"
                        ;; String macros
-                       (seq (or "include"
-                                "fg" "fg-key" "fg-delimiter"
-                                "fg-prefix" "fg-chord"
+                       (seq (or "include" "implicit-array-keys"
+                                "fg-key" "fg-delimiter"
+                                "fg-prefix" "fg-chord" "fg"
                                 "bg" "bd" "shell" "font")
                             (zero-or-more space)
                             (char ?\")
@@ -142,7 +142,7 @@
     ;; Interpolations
     (,(rx (group (seq "%(")
                  (seq (or "key"
-                          "index" "index+1"
+                          "index+1" "index"
                           "desc^^" "desc^"
                           "desc,," "desc,"
                           "desc"))
