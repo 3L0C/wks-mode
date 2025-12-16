@@ -71,8 +71,8 @@ section:
 ## Doom Emacs
 
 If you use [Doom
-Emacs](https://github.com/hlissner/doom-emacs), add the
-followings in the `packages.el` and `config.el`
+Emacs](https://github.com/hlissner/doom-emacs), 
+add the followings in the `packages.el` and `config.el`,
 respectively. 
 
 ``` emacs-lisp

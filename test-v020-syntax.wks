@@ -1,0 +1,264 @@
+# Test file for wks-mode v0.2.1 syntax highlighting
+# This file exercises all new and updated syntax features
+
+# =============================================================================
+# 1. NEW MACROS
+# =============================================================================
+
+# Color alias macros (aliases for :fg, :bg, :bd)
+:fg-color "#ffffff"
+:bg-color "#1a1a2e"
+:bd-color "#4a4a6a"
+
+# Original color macros (should still work)
+:fg "#cccccc"
+:bg "#000000"
+:bd "#333333"
+
+# :keep-delay - unsigned integer for delay with +keep flag
+:keep-delay 150
+
+# :unsorted - switch macro to disable sorting
+:unsorted
+
+# Other existing macros for comparison
+:debug
+:sort
+:top
+:bottom
+:menu-width 800
+:menu-gap -1
+:table-padding 10
+:max-columns 4
+:border-width 2
+:border-radius 5.5
+:delay 200
+:font "monospace 12"
+:shell "/bin/bash"
+:title "Test Menu"
+
+# =============================================================================
+# 2. @goto META COMMAND
+# =============================================================================
+
+# @goto navigates to another prefix or chord
+g "Goto root" @goto ""
+n "Goto nested" @goto "w m"
+
+# =============================================================================
+# 3. SPECIAL KEYS (including BS)
+# =============================================================================
+
+
+# Other special keys
+TAB "Tab key" %{{echo tab}}
+SPC "Space" %{{echo space}}
+RET "Return" %{{echo return}}
+DEL "Delete" %{{echo delete}}
+ESC "Escape" %{{echo escape}}
+BS "Backspace" %{{echo backspace}}
+
+# Arrow keys
+Left "Left arrow" %{{echo left}}
+Right "Right arrow" %{{echo right}}
+Up "Up arrow" %{{echo up}}
+Down "Down arrow" %{{echo down}}
+
+# Navigation keys
+Home "Home" %{{echo home}}
+End "End" %{{echo end}}
+PgUp "Page Up" %{{echo pgup}}
+PgDown "Page Down" %{{echo pgdown}}
+
+# Function keys
+F1 "Help" %{{echo f1}}
+F12 "F12" %{{echo f12}}
+
+# Media keys
+VolUp "Volume Up" %{{pactl set-sink-volume @DEFAULT_SINK@ +5%}}
+VolDown "Volume Down" %{{pactl set-sink-volume @DEFAULT_SINK@ -5%}}
+VolMute "Mute" %{{pactl set-sink-mute @DEFAULT_SINK@ toggle}}
+Play "Play/Pause" %{{playerctl play-pause}}
+
+# =============================================================================
+# 4. FLAGS (updated - no +ignore-sort)
+# =============================================================================
+
+# Valid flags
+a "Keep menu" +keep %{{echo keep}}
+b "Close menu" +close %{{echo close}}
+c "Inherit" +inherit %{{echo inherit}}
+d "Execute" +execute %{{echo execute}}
+e "Ignore hooks" +ignore %{{echo ignore}}
+f "Unhook" +unhook %{{echo unhook}}
+g "Deflag" +deflag %{{echo deflag}}
+h "No before" +no-before %{{echo no-before}}
+i "No after" +no-after %{{echo no-after}}
+j "Write mode" +write %{{echo write}}
+k "Sync command" +sync-command %{{echo sync}}
+l "Unwrap" +unwrap %{{echo unwrap}}
+
+# Flags with string arguments
+m "With title" +title "Custom Title" %{{echo titled}}
+n "With wrap" +wrap "wrapper --" %{{echo wrapped}}
+
+# Invalid flag (should NOT be highlighted as keyword)
+# +ignore-sort is removed from spec
+o "Old flag" +ignore-sort %{{echo this flag is invalid}}
+
+# =============================================================================
+# 5. IMPLICIT ARRAY MODIFIERS
+# =============================================================================
+
+# Plain implicit array
+... "Item %(index+1)" %{{echo %(key)}}
+
+# Modifier + implicit array (NEW)
+C-... "Ctrl+%(index+1)" %{{echo ctrl-%(key)}}
+M-... "Alt+%(index+1)" %{{echo alt-%(key)}}
+S-... "Shift+%(index+1)" %{{echo shift-%(key)}}
+H-... "Hyper+%(index+1)" %{{echo hyper-%(key)}}
+
+# Combined modifiers
+C-M-... "Ctrl+Alt+%(index+1)" %{{echo ctrl-alt-%(key)}}
+C-S-... "Ctrl+Shift+%(index+1)" %{{echo ctrl-shift-%(key)}}
+
+# =============================================================================
+# 6. CHORD EXPRESSIONS IN ARRAYS
+# =============================================================================
+
+# Explicit array with chord expressions
+[
+    (b "Brave browser" +keep %{{brave}})
+    (c "Chrome" %{{google-chrome}})
+    (f "Firefox" +close %{{firefox}})
+    x
+    y
+    z
+] "Browser %(key)" %{{xdg-open}}
+
+# Another example with mixed entries
+[
+    (1 "Terminal 1" %{{kitty}})
+    (2 "Terminal 2" %{{alacritty}})
+    3
+    4
+] "Terminal %(index+1)" %{{xterm}}
+
+# =============================================================================
+# 7. EXPLICIT ARRAYS
+# =============================================================================
+
+[abc] "Letter %(key)" %{{echo %(key)}}
+[123] "Number %(index+1)" %{{echo %(key)}}
+[xyz] "XYZ %(desc)" %{{notify-send "%(desc)"}}
+
+# =============================================================================
+# 8. HOOKS
+# =============================================================================
+
+p "With hooks" ^before ^after %{{echo hooked}}
+q "Sync hooks" ^sync-before ^sync-after %{{echo sync-hooked}}
+
+# =============================================================================
+# 9. KEY MODIFIERS
+# =============================================================================
+
+C-a "Ctrl+A" %{{echo ctrl-a}}
+M-b "Alt+B" %{{echo alt-b}}
+S-c "Shift+C" %{{echo shift-c}}
+H-d "Hyper+D" %{{echo hyper-d}}
+C-M-e "Ctrl+Alt+E" %{{echo ctrl-alt-e}}
+C-S-M-f "Ctrl+Shift+Alt+F" %{{echo ctrl-shift-alt-f}}
+
+# =============================================================================
+# 10. INTERPOLATIONS
+# =============================================================================
+
+:var "myapp" "firefox"
+:var "myterm" "kitty"
+
+# Builtin interpolations
+t "Test %(key)" %{{echo key=%(key)}}
+u "Index %(index)" %{{echo index=%(index)}}
+v "Index+1 %(index+1)" %{{echo index+1=%(index+1)}}
+
+# Description interpolations
+w "Test desc" %{{echo "%(desc)" "%(desc^)" "%(desc^^)" "%(desc,)" "%(desc,,)"}}
+
+# Wrap command interpolation
+x "Wrap cmd" +wrap "prefix-" %{{%(wrap_cmd) suffix}}
+
+# User variable interpolations
+y "Open %(myapp)" %{{%(myapp)}}
+z "Launch %(myterm)" %{{%(myterm)}}
+
+# =============================================================================
+# 11. COMMAND DELIMITERS
+# =============================================================================
+
+1 "Braces" %{{echo braces}}
+2 "Parens" %((echo parens))
+3 "Brackets" %[[echo brackets]]
+4 "Pipes" %||echo pipes||
+5 "Hashes" %##echo hashes##
+
+# =============================================================================
+# 12. PREFIXES (nested structure)
+# =============================================================================
+
+w "Window prefix"
+{
+    m "Move submenu"
+    {
+        h "Move left" %{{wmctrl -r :ACTIVE: -e 0,0,0,-1,-1}}
+        l "Move right" %{{wmctrl -r :ACTIVE: -e 0,960,0,-1,-1}}
+        j "Move down" %{{wmctrl -r :ACTIVE: -e 0,0,540,-1,-1}}
+        k "Move up" %{{wmctrl -r :ACTIVE: -e 0,0,0,-1,-1}}
+
+        # Goto back to root
+        ESC "Back to root" @goto ""
+    }
+
+    r "Resize submenu"
+    {
+        [hjkl] "Resize %(key)" %{{resize-window %(key)}}
+    }
+}
+
+# =============================================================================
+# 13. SINGLE CHARACTER KEYS (UTF-8)
+# =============================================================================
+
+# ASCII
+! "Exclaim" %{{echo !}}
+@ "At" %{{echo @}}
+/ "Slash" %{{echo /}}
+
+# Unicode
+日 "Japanese" %{{echo nihongo}}
+中 "Chinese" %{{echo zhongwen}}
+α "Alpha" %{{echo alpha}}
+β "Beta" %{{echo beta}}
+→ "Arrow" %{{echo arrow}}
+
+# =============================================================================
+# 14. ESCAPED CHARACTERS
+# =============================================================================
+
+# Escaped quotes in strings
+\" "Quote test \"escaped\"" %{{echo "test"}}
+
+# Escaped special chars
+\# "Hash" %{{echo hash}}
+\[ "Open bracket" %{{echo bracket}}
+
+# =============================================================================
+# 15. COMMENTS
+# =============================================================================
+
+# This is a comment
+# Comments should have comment face, not keyword faces
+# Even with :var %(key) +flag ^hook %{{cmd}} inside
+
+# End of test file
