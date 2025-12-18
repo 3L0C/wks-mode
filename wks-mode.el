@@ -403,14 +403,16 @@ variables."
                "\""))
      (1 font-lock-constant-face))
 
-    ;; Special keys (TAB, SPC, F1-F35, arrow keys, etc.)
-    (,(rx (seq word-boundary
-               (or "TAB" "SPC" "RET" "BS" "DEL" "ESC" "Home" "End" "Begin"
-                   "PgUp" "PgDown" "Left" "Right" "Up" "Down"
-                   "VolDown" "VolMute" "VolUp" "Play" "Stop" "Prev" "Next"
-                   (seq "F" (one-or-more digit)))
+    ;; Special keys with optional modifiers (TAB, SPC, F1-F35, arrow keys, etc.)
+    ;; Matches S-BS, C-M-TAB, etc.
+    (,(rx (seq (or line-start space)
+               (group (zero-or-more (or "C-" "M-" "H-" "S-"))
+                      (or "TAB" "SPC" "RET" "BS" "DEL" "ESC" "Home" "End" "Begin"
+                          "PgUp" "PgDown" "Left" "Right" "Up" "Down"
+                          "VolDown" "VolMute" "VolUp" "Play" "Stop" "Prev" "Next"
+                          (seq "F" (one-or-more digit))))
                word-boundary))
-     (0 font-lock-constant-face))))
+     (1 font-lock-constant-face))))
 
 (defun wks--font-lock-strings ()
   "Font-lock patterns for strings."
