@@ -595,53 +595,144 @@ This function is adapted from `zig-mode'."
 
 ;;; Completion
 
+(defconst wks--macro-names
+  '("include" "var" "fg-key" "fg-delimiter" "fg-prefix" "fg-chord"
+    "fg" "fg-color" "bg" "bg-color" "bd" "bd-color"
+    "shell" "font" "debug" "sort" "unsorted" "top" "bottom"
+    "menu-width" "menu-gap" "max-columns" "border-width"
+    "width-padding" "height-padding" "delay" "keep-delay"
+    "border-radius" "table-padding" "implicit-array-keys")
+  "List of macro names for completion.")
+
+(defconst wks--flag-names
+  '("keep" "close" "inherit" "execute" "ignore"
+    "unhook" "deflag" "no-before" "no-after" "write"
+    "sync-command" "title" "wrap" "unwrap")
+  "List of flag names for completion.")
+
+(defconst wks--hook-names
+  '("before" "after" "sync-before" "sync-after")
+  "List of hook names for completion.")
+
+(defconst wks--interpolation-names
+  '("key" "index" "index+1" "desc" "desc^" "desc^^"
+    "desc," "desc,," "wrap_cmd")
+  "List of interpolation variable names for completion.")
+
+(defconst wks--meta-names
+  '("goto")
+  "List of meta command names for completion.")
+
+(defconst wks--special-keys
+  '("TAB" "SPC" "RET" "BS" "DEL" "ESC" "Home" "End" "Begin"
+    "PgUp" "PgDown" "Left" "Right" "Up" "Down"
+    "VolDown" "VolMute" "VolUp" "Play" "Stop" "Prev" "Next"
+    "F1" "F2" "F3" "F4" "F5" "F6" "F7" "F8" "F9" "F10"
+    "F11" "F12" "F13" "F14" "F15" "F16" "F17" "F18" "F19" "F20"
+    "F21" "F22" "F23" "F24" "F25" "F26" "F27" "F28" "F29" "F30"
+    "F31" "F32" "F33" "F34" "F35")
+  "List of special key names for completion.")
+
+(defconst wks--completion-categories
+  '((macro . (:annotation " Macro" :kind keyword))
+    (flag . (:annotation " Flag" :kind property))
+    (hook . (:annotation " Hook" :kind event))
+    (interpolation . (:annotation " Var" :kind variable))
+    (meta . (:annotation " Meta" :kind function))
+    (special-key . (:annotation " Key" :kind constant)))
+  "Metadata for completion categories.
+Each entry maps a category symbol to a plist with :annotation and :kind.")
+
+(defun wks--make-completion-table (candidates category)
+  "Create completion table from CANDIDATES with CATEGORY metadata.
+Returns a function suitable for use as a completion table that provides
+annotation and company-kind metadata for corfu/company integration."
+  (let* ((meta (alist-get category wks--completion-categories))
+         (annotation (plist-get meta :annotation))
+         (kind (plist-get meta :kind)))
+    (lambda (string pred action)
+      (if (eq action 'metadata)
+          `(metadata
+            (annotation-function . ,(lambda (_) annotation))
+            (company-kind . ,(lambda (_) kind))
+            (category . ,category))
+        (complete-with-action action candidates string pred)))))
+
+(defun wks--find-completion-bounds ()
+  "Find bounds for completion, looking backward from point if needed.
+Returns (START . END) or nil.
+Uses `word' instead of `symbol' to avoid including prefix chars like +, :, etc."
+  (or (bounds-of-thing-at-point 'word)
+      ;; If at end of word, look backward
+      (save-excursion
+        (skip-chars-backward "[:alnum:]_-")
+        (when (< (point) (save-excursion (skip-chars-forward "[:alnum:]_-") (point)))
+          (let ((start (point)))
+            (skip-chars-forward "[:alnum:]_-")
+            (cons start (point)))))))
+
 (defun wks-completion-at-point ()
-  "Completion at point function for wks mode."
-  (let ((bounds (bounds-of-thing-at-point 'symbol)))
-    (when bounds
-      (list (car bounds)
-            (cdr bounds)
-            (cond
-             ;; After :
-             ((save-excursion
-                (goto-char (car bounds))
-                (or (eq (char-before) ?:)
-                    (eq (char-after) ?:)))
-              '("include" "var" "fg-key" "fg-delimiter" "fg-prefix" "fg-chord"
-                "fg" "fg-color" "bg" "bg-color" "bd" "bd-color"
-                "shell" "font" "debug" "sort" "unsorted" "top" "bottom"
-                "menu-width" "menu-gap" "max-columns" "border-width"
-                "width-padding" "height-padding" "delay" "keep-delay"
-                "border-radius" "table-padding" "implicit-array-keys"))
-             ;; After +
-             ((save-excursion
-                (goto-char (car bounds))
-                (or (eq (char-before) ?+)
-                    (eq (char-after) ?+)))
-              '("keep" "close" "inherit" "execute" "ignore"
-                "unhook" "deflag" "no-before" "no-after" "write"
-                "sync-command" "title" "wrap" "unwrap"))
-             ;; After ^
-             ((save-excursion
-                (goto-char (car bounds))
-                (or (eq (char-before) ?^)
-                    (eq (char-after) ?^)))
-              '("before" "after" "sync-before" "sync-after"))
-             ;; After %(
-             ((save-excursion
-                (goto-char (car bounds))
-                (and (>= (point) 2)
-                     (equal (buffer-substring (- (point) 2) (point)) "%(")))
-              '("key" "index" "index+1" "desc" "desc^" "desc^^"
-                "desc," "desc,," "wrap_cmd"))
-             ;; After @
-             ((save-excursion
-                (goto-char (car bounds))
-                (or (eq (char-before) ?@)
-                    (eq (char-after) ?@)))
-              '("goto"))
-             (t nil))
-            :exclusive 'no))))
+  "Completion at point function for wks mode.
+Provides context-aware completion with annotations and icons for corfu."
+  (let* ((bounds (wks--find-completion-bounds))
+         (start (or (car bounds) (point)))
+         (end (or (cdr bounds) (point)))
+         (char-before-start (char-before start))
+         (char-before-point (char-before (point))))
+    (cond
+     ;; After : (macros)
+     ((or (eq char-before-start ?:)
+          (eq char-before-point ?:))
+      (let ((actual-start (if (eq char-before-point ?:) (point) start)))
+        (list actual-start end
+              (wks--make-completion-table wks--macro-names 'macro)
+              :exclusive 'no)))
+
+     ;; After + (flags)
+     ((or (eq char-before-start ?+)
+          (eq char-before-point ?+))
+      (let ((actual-start (if (eq char-before-point ?+) (point) start)))
+        (list actual-start end
+              (wks--make-completion-table wks--flag-names 'flag)
+              :exclusive 'no)))
+
+     ;; After ^ (hooks)
+     ((or (eq char-before-start ?^)
+          (eq char-before-point ?^))
+      (let ((actual-start (if (eq char-before-point ?^) (point) start)))
+        (list actual-start end
+              (wks--make-completion-table wks--hook-names 'hook)
+              :exclusive 'no)))
+
+     ;; After %( (interpolations)
+     ((and (> start 2)
+           (save-excursion
+             (goto-char start)
+             (equal (buffer-substring (- (point) 2) (point)) "%(")))
+      (list start end
+            (wks--make-completion-table wks--interpolation-names 'interpolation)
+            :exclusive 'no))
+
+     ;; After @ (meta commands)
+     ((or (eq char-before-start ?@)
+          (eq char-before-point ?@))
+      (let ((actual-start (if (eq char-before-point ?@) (point) start)))
+        (list actual-start end
+              (wks--make-completion-table wks--meta-names 'meta)
+              :exclusive 'no)))
+
+     ;; Default: special keys (when at word boundary)
+     (bounds
+      (let ((at-word-start (save-excursion
+                             (goto-char start)
+                             (or (bolp)
+                                 (memq (char-before) '(?\s ?\t ?\n))))))
+        (when at-word-start
+          (list start end
+                (wks--make-completion-table wks--special-keys 'special-key)
+                :exclusive 'no))))
+
+     (t nil))))
 
 ;;; Flymake
 

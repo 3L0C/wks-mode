@@ -365,7 +365,8 @@
    ":v"
    (goto-char (point-max))
    (let* ((result (wks-completion-at-point))
-          (candidates (nth 2 result)))
+          (table (nth 2 result))
+          (candidates (all-completions "" table)))
      (should (member "var" candidates))
      (should (member "include" candidates)))))
 
@@ -375,7 +376,8 @@
    "+keep"
    (goto-char (1+ (point-min)))  ; Position after the +
    (let* ((result (wks-completion-at-point))
-          (candidates (nth 2 result)))
+          (table (nth 2 result))
+          (candidates (all-completions "" table)))
      (should (member "keep" candidates))
      (should (member "close" candidates)))))
 
@@ -385,7 +387,8 @@
    "^b"
    (goto-char (point-max))
    (let* ((result (wks-completion-at-point))
-          (candidates (nth 2 result)))
+          (table (nth 2 result))
+          (candidates (all-completions "" table)))
      (should (member "before" candidates))
      (should (member "after" candidates)))))
 
@@ -395,7 +398,8 @@
    "%(k"
    (goto-char (point-max))
    (let* ((result (wks-completion-at-point))
-          (candidates (nth 2 result)))
+          (table (nth 2 result))
+          (candidates (all-completions "" table)))
      (should (member "key" candidates))
      (should (member "index" candidates)))))
 
@@ -406,7 +410,8 @@
     (insert "a @goto")  ; Add prefix so there's content before @
     (goto-char 5)  ; Position after @g (at position 5: "a @g|oto")
     (let* ((result (wks-completion-at-point))
-           (candidates (nth 2 result)))
+           (table (nth 2 result))
+           (candidates (all-completions "" table)))
       (should (member "goto" candidates)))))
 
 (ert-deftest wks-mode-test-completion-new-macros ()
@@ -415,7 +420,8 @@
    ":u"
    (goto-char (point-max))
    (let* ((result (wks-completion-at-point))
-          (candidates (nth 2 result)))
+          (table (nth 2 result))
+          (candidates (all-completions "" table)))
      (should (member "unsorted" candidates))
      (should (member "fg-color" candidates))
      (should (member "keep-delay" candidates)))))
@@ -426,11 +432,146 @@
    "+t"
    (goto-char (point-max))
    (let* ((result (wks-completion-at-point))
-          (candidates (nth 2 result)))
+          (table (nth 2 result))
+          (candidates (all-completions "" table)))
      (should (member "title" candidates))
      (should (member "wrap" candidates))
      (should (member "unwrap" candidates))
      (should-not (member "ignore-sort" candidates)))))
+
+(ert-deftest wks-mode-test-completion-annotation ()
+  "Test that completion returns annotation function."
+  (wks-test-with-temp-buffer
+   ":v"
+   (goto-char (point-max))
+   (let* ((result (wks-completion-at-point))
+          (table (nth 2 result))
+          (metadata (funcall table "" nil 'metadata))
+          (ann-fn (cdr (assq 'annotation-function (cdr metadata)))))
+     (should ann-fn)
+     (should (string= (funcall ann-fn "var") " Macro")))))
+
+(ert-deftest wks-mode-test-completion-annotation-flag ()
+  "Test that flag completion has Flag annotation."
+  (wks-test-with-temp-buffer
+   "+k"
+   (goto-char (point-max))
+   (let* ((result (wks-completion-at-point))
+          (table (nth 2 result))
+          (metadata (funcall table "" nil 'metadata))
+          (ann-fn (cdr (assq 'annotation-function (cdr metadata)))))
+     (should ann-fn)
+     (should (string= (funcall ann-fn "keep") " Flag")))))
+
+(ert-deftest wks-mode-test-completion-kind ()
+  "Test that completion returns company-kind function."
+  (wks-test-with-temp-buffer
+   "+k"
+   (goto-char (point-max))
+   (let* ((result (wks-completion-at-point))
+          (table (nth 2 result))
+          (metadata (funcall table "" nil 'metadata))
+          (kind-fn (cdr (assq 'company-kind (cdr metadata)))))
+     (should kind-fn)
+     (should (eq (funcall kind-fn "keep") 'property)))))
+
+(ert-deftest wks-mode-test-completion-kind-macro ()
+  "Test that macro completion has keyword kind."
+  (wks-test-with-temp-buffer
+   ":v"
+   (goto-char (point-max))
+   (let* ((result (wks-completion-at-point))
+          (table (nth 2 result))
+          (metadata (funcall table "" nil 'metadata))
+          (kind-fn (cdr (assq 'company-kind (cdr metadata)))))
+     (should kind-fn)
+     (should (eq (funcall kind-fn "var") 'keyword)))))
+
+(ert-deftest wks-mode-test-completion-trigger-after-colon ()
+  "Test completion triggers immediately after : with no symbol."
+  (wks-test-with-temp-buffer
+   ":"
+   (goto-char (point-max))
+   (let ((result (wks-completion-at-point)))
+     (should result)
+     (should (= (nth 0 result) 2))
+     (should (= (nth 1 result) 2)))))
+
+(ert-deftest wks-mode-test-completion-trigger-after-plus ()
+  "Test completion triggers immediately after + with no symbol."
+  (wks-test-with-temp-buffer
+   "+"
+   (goto-char (point-max))
+   (let ((result (wks-completion-at-point)))
+     (should result)
+     (should (= (nth 0 result) 2))
+     (should (= (nth 1 result) 2)))))
+
+(ert-deftest wks-mode-test-completion-trigger-after-caret ()
+  "Test completion triggers immediately after ^ with no symbol."
+  (wks-test-with-temp-buffer
+   "^"
+   (goto-char (point-max))
+   (let ((result (wks-completion-at-point)))
+     (should result)
+     (should (= (nth 0 result) 2))
+     (should (= (nth 1 result) 2)))))
+
+(ert-deftest wks-mode-test-completion-trigger-after-at ()
+  "Test completion triggers immediately after @ with no symbol."
+  (wks-test-with-temp-buffer
+   "@"
+   (goto-char (point-max))
+   (let ((result (wks-completion-at-point)))
+     (should result)
+     (should (= (nth 0 result) 2))
+     (should (= (nth 1 result) 2)))))
+
+(ert-deftest wks-mode-test-completion-special-keys ()
+  "Test completion for special keys."
+  (wks-test-with-temp-buffer
+   "TA"
+   (goto-char (point-max))
+   (let* ((result (wks-completion-at-point))
+          (table (nth 2 result)))
+     (should result)
+     (should (member "TAB" (all-completions "" table))))))
+
+(ert-deftest wks-mode-test-completion-special-keys-f-keys ()
+  "Test completion includes function keys."
+  (wks-test-with-temp-buffer
+   "F"
+   (goto-char (point-max))
+   (let* ((result (wks-completion-at-point))
+          (table (nth 2 result)))
+     (should result)
+     (should (member "F1" (all-completions "" table)))
+     (should (member "F12" (all-completions "" table)))
+     (should (member "F35" (all-completions "" table))))))
+
+(ert-deftest wks-mode-test-completion-special-keys-annotation ()
+  "Test that special keys have Key annotation."
+  (wks-test-with-temp-buffer
+   "TA"
+   (goto-char (point-max))
+   (let* ((result (wks-completion-at-point))
+          (table (nth 2 result))
+          (metadata (funcall table "" nil 'metadata))
+          (ann-fn (cdr (assq 'annotation-function (cdr metadata)))))
+     (should ann-fn)
+     (should (string= (funcall ann-fn "TAB") " Key")))))
+
+(ert-deftest wks-mode-test-completion-special-keys-kind ()
+  "Test that special keys have constant kind."
+  (wks-test-with-temp-buffer
+   "SP"
+   (goto-char (point-max))
+   (let* ((result (wks-completion-at-point))
+          (table (nth 2 result))
+          (metadata (funcall table "" nil 'metadata))
+          (kind-fn (cdr (assq 'company-kind (cdr metadata)))))
+     (should kind-fn)
+     (should (eq (funcall kind-fn "SPC") 'constant)))))
 
 ;;; Imenu Tests
 
