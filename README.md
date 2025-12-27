@@ -30,7 +30,7 @@ Alternatively, if you're on Emacs 30,
 a `:vc` keyword is built into use-package:
 
 ``` emacs-lisp
-(use-package kbd-mode
+(use-package wks-mode
   :vc (:url "https://github.com/3L0C/wks-mode" :rev :newest))
 ```
 
