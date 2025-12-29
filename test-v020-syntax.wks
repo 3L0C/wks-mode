@@ -24,7 +24,6 @@
 
 # Other existing macros for comparison
 :debug
-:sort
 :top
 :bottom
 :menu-width 800

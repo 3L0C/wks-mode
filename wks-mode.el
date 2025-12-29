@@ -239,7 +239,7 @@ to prevent syntax elements from being highlighted in comments."
   `(
     ;; Preprocessor switch macros (no arguments)
     (,(rx (seq ":"
-               (group (or "debug" "sort" "unsorted" "top" "bottom"))
+               (group (or "debug" "unsorted" "top" "bottom"))
                (or space eol)))
      (1 font-lock-preprocessor-face))
 
