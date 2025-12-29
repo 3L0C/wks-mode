@@ -5,13 +5,14 @@
 # 1. NEW MACROS
 # =============================================================================
 
-# Color alias macros (aliases for :fg, :bg, :bd)
-:fg-color "#ffffff"
-:bg-color "#1a1a2e"
-:bd-color "#4a4a6a"
-
 # Original color macros (should still work)
-:fg "#cccccc"
+:fg-key "#aaaaaa"
+:fg-delimiter "#bbbbbb"
+:fg-prefix "#cccccc"
+:fg-chord "#dddddd"
+:fg-title "#eeeeee"
+:fg-goto "#ffffff"
+:fg "#ffffff"
 :bg "#000000"
 :bd "#333333"
 

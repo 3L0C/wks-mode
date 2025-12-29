@@ -258,7 +258,7 @@ to prevent syntax elements from being highlighted in comments."
     (,(rx-to-string `(seq ":"
                       (group (or "include" "implicit-array-keys"
                                  "fg-key" "fg-delimiter" "fg-prefix"
-                                 "fg-chord" "fg" "fg-color" "bg" "bg-color" "bd" "bd-color"
+                                 "fg-chord" "fg-goto" "fg" "bg" "bd"
                                  "shell" "font" "title" "title-font" "fg-title"
                                  "wrap-cmd" "delimiter"))
                       (one-or-more space)
@@ -597,8 +597,8 @@ This function is adapted from `zig-mode'."
 
 (defconst wks--macro-names
   '("include" "var" "fg-key" "fg-delimiter" "fg-prefix" "fg-chord"
-    "fg" "fg-color" "bg" "bg-color" "bd" "bd-color"
-    "shell" "font" "debug" "sort" "unsorted" "top" "bottom"
+    "fg-title" "fg-goto" "fg" "bg" "bd"
+    "shell" "font" "debug" "unsorted" "top" "bottom"
     "menu-width" "menu-gap" "max-columns" "border-width"
     "width-padding" "height-padding" "delay" "keep-delay"
     "border-radius" "table-padding" "implicit-array-keys")
