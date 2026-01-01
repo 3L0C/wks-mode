@@ -232,6 +232,33 @@
    ;; Closing bracket should be builtin face (position 5)
    (should (eq (get-text-property 5 'face) font-lock-builtin-face))))
 
+(ert-deftest wks-mode-test-font-lock-key-options ()
+  "Test that key options have angle brackets and keys with different faces."
+  (wks-test-with-temp-buffer
+   "<abc> \"Test\" %{{cmd}}"
+   (font-lock-ensure)
+   ;; Opening angle should be builtin face (position 1)
+   (should (eq (get-text-property 1 'face) font-lock-builtin-face))
+   ;; Keys should be constant face (positions 2, 3, 4)
+   (should (eq (get-text-property 2 'face) font-lock-constant-face))
+   ;; Closing angle should be builtin face (position 5)
+   (should (eq (get-text-property 5 'face) font-lock-builtin-face))))
+
+(ert-deftest wks-mode-test-font-lock-key-options-with-modifier ()
+  "Test that key options with modifier prefix are highlighted correctly."
+  (wks-test-with-temp-buffer
+   "M-<a b c> \"Test\" %{{cmd}}"
+   (font-lock-ensure)
+   ;; M- modifier should be constant face (positions 1-2)
+   (should (eq (get-text-property 1 'face) font-lock-constant-face))
+   (should (eq (get-text-property 2 'face) font-lock-constant-face))
+   ;; Opening angle should be builtin face (position 3)
+   (should (eq (get-text-property 3 'face) font-lock-builtin-face))
+   ;; Keys should be constant face
+   (should (eq (get-text-property 4 'face) font-lock-constant-face))
+   ;; Closing angle should be builtin face (position 9)
+   (should (eq (get-text-property 9 'face) font-lock-builtin-face))))
+
 (ert-deftest wks-mode-test-font-lock-special-key ()
   "Test that special keys are highlighted."
   (wks-test-with-temp-buffer

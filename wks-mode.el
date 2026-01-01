@@ -367,16 +367,20 @@ before user-defined variables."
                (one-or-more space)))
      (1 font-lock-keyword-face))
 
-    ;; Explicit chord array - [keys] with separate highlighting for brackets and keys
+    ;; Explicit chord array [keys] or key options <keys>
+    ;; Supports optional modifiers before < for key options: M-<a b c>
+    ;; Separate highlighting for modifiers, brackets/angles, and keys
     (,(rx (seq line-start
                (zero-or-more space)
-               (group "[")
-               (group (one-or-more (not (any "]" "\n"))))
-               (group "]")
+               (group (zero-or-more (or "C-" "M-" "H-" "S-")))  ; Optional modifiers
+               (group (any "[" "<"))
+               (group (one-or-more (not (any "]" ">" "\n"))))
+               (group (any "]" ">"))
                (one-or-more space)))
-     (1 font-lock-builtin-face)       ; Opening bracket
-     (2 font-lock-constant-face)      ; Keys (trigger key face)
-     (3 font-lock-builtin-face))      ; Closing bracket
+     (1 font-lock-constant-face)      ; Modifiers (same as trigger keys)
+     (2 font-lock-builtin-face)       ; Opening bracket/angle
+     (3 font-lock-constant-face)      ; Keys (trigger key face)
+     (4 font-lock-builtin-face))      ; Closing bracket/angle
 
     ;; Chord expressions inside arrays - (key "desc" ...)
     ;; Match opening paren at line start (after whitespace) inside arrays
@@ -391,7 +395,7 @@ before user-defined variables."
     ;; Bare keys inside multi-line arrays - single char on its own line (indented)
     (,(rx (seq line-start
                (one-or-more space)  ; Must be indented (inside array)
-               (group (not (any space "\t" "\n" "[" "]" "(" ")" "{" "}")))
+               (group (not (any space "\t" "\n" "[" "]" "<" ">" "(" ")" "{" "}")))
                (or space eol)))     ; Followed by space or end of line
      (1 font-lock-constant-face))
 
@@ -454,7 +458,7 @@ before user-defined variables."
      (0 font-lock-warning-face prepend))
 
     ;; Delimiters
-    (,(rx (or "{" "}" "[" "]" "(" ")"))
+    (,(rx (or "{" "}" "[" "]" "(" ")" "<" ">"))
      (0 font-lock-builtin-face))))
 
 ;;; Font Lock Keywords - Three Levels
