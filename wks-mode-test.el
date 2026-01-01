@@ -84,6 +84,15 @@
    (should (eq (get-text-property (match-beginning 0) 'face)
                font-lock-keyword-face))))
 
+(ert-deftest wks-mode-test-font-lock-args-flag ()
+  "Test that +args flag is highlighted correctly."
+  (wks-test-with-temp-buffer
+   "a \"Test %($0)\" +args \"foo\" %{{cmd}}"
+   (font-lock-ensure)
+   (search-forward "args")
+   (should (eq (get-text-property (match-beginning 0) 'face)
+               font-lock-keyword-face))))
+
 (ert-deftest wks-mode-test-font-lock-builtin-interpolation ()
   "Test that builtin interpolations have delimiters and content with different faces."
   (wks-test-with-temp-buffer
@@ -117,6 +126,25 @@
    (let ((content-face (get-text-property (+ (match-beginning 0) 2) 'face)))
      (should (or (eq content-face font-lock-variable-name-face)
                  (and (listp content-face) (memq font-lock-variable-name-face content-face)))))
+   ;; Check ) has builtin face
+   (let ((close-face (get-text-property (1- (match-end 0)) 'face)))
+     (should (or (eq close-face font-lock-builtin-face)
+                 (and (listp close-face) (memq font-lock-builtin-face close-face)))))))
+
+(ert-deftest wks-mode-test-font-lock-arg-position-interpolation ()
+  "Test that argument position interpolations %($0), %($1) are highlighted."
+  (wks-test-with-temp-buffer
+   "a \"Test %($0) and %($1)\" +args \"foo\" \"bar\" %{{echo %($0)}}"
+   (font-lock-ensure)
+   (search-forward "%($0)")
+   ;; Check %( has builtin face
+   (let ((paren-face (get-text-property (match-beginning 0) 'face)))
+     (should (or (eq paren-face font-lock-builtin-face)
+                 (and (listp paren-face) (memq font-lock-builtin-face paren-face)))))
+   ;; Check '$0' has constant face (position after "%(")
+   (let ((content-face (get-text-property (+ (match-beginning 0) 2) 'face)))
+     (should (or (eq content-face font-lock-constant-face)
+                 (and (listp content-face) (memq font-lock-constant-face content-face)))))
    ;; Check ) has builtin face
    (let ((close-face (get-text-property (1- (match-end 0)) 'face)))
      (should (or (eq close-face font-lock-builtin-face)
@@ -427,7 +455,7 @@
      (should (member "keep-delay" candidates)))))
 
 (ert-deftest wks-mode-test-completion-flags-updated ()
-  "Test that flag completion has title, wrap, unwrap but not ignore-sort."
+  "Test that flag completion has title, wrap, unwrap, args but not ignore-sort."
   (wks-test-with-temp-buffer
    "+t"
    (goto-char (point-max))
@@ -437,6 +465,7 @@
      (should (member "title" candidates))
      (should (member "wrap" candidates))
      (should (member "unwrap" candidates))
+     (should (member "args" candidates))
      (should-not (member "ignore-sort" candidates)))))
 
 (ert-deftest wks-mode-test-completion-annotation ()

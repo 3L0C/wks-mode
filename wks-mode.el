@@ -229,7 +229,7 @@ to prevent syntax elements from being highlighted in comments."
                (group (or "keep" "close" "inherit" "execute"
                           "ignore" "unhook" "deflag"
                           "no-before" "no-after" "write"
-                          "sync-command" "title" "wrap" "unwrap"))
+                          "sync-command" "title" "wrap" "unwrap" "args"))
                (or (not (any "-" alnum)) eol)))
      (1 'default)
      (2 font-lock-keyword-face))))
@@ -305,8 +305,8 @@ to prevent syntax elements from being highlighted in comments."
 
 (defun wks--font-lock-interpolations ()
   "Font-lock patterns for wks interpolations.
-NOTE: Order matters! Builtin interpolations MUST come before user-defined
-variables."
+NOTE: Order matters! Builtin interpolations and argument positions MUST come
+before user-defined variables."
   `(
     ;; Builtin interpolations - split into delimiter and content groups
     ;; Use matcher function to skip comments while highlighting in strings
@@ -322,6 +322,18 @@ variables."
         limit))
      (1 font-lock-builtin-face prepend)    ; %(
      (2 font-lock-constant-face prepend)   ; content
+     (3 font-lock-builtin-face prepend))   ; )
+
+    ;; Argument position interpolations - %($0), %($1), etc.
+    ;; Use matcher function to skip comments while highlighting in strings
+    ((lambda (limit)
+       (wks--match-unless-comment
+        (rx (group "%(")
+            (group "$" (one-or-more digit))
+            (group ")"))
+        limit))
+     (1 font-lock-builtin-face prepend)    ; %(
+     (2 font-lock-constant-face prepend)   ; $N
      (3 font-lock-builtin-face prepend))   ; )
 
     ;; User-defined variable interpolations - catch-all for %(anything-not-builtin)
@@ -607,7 +619,7 @@ This function is adapted from `zig-mode'."
 (defconst wks--flag-names
   '("keep" "close" "inherit" "execute" "ignore"
     "unhook" "deflag" "no-before" "no-after" "write"
-    "sync-command" "title" "wrap" "unwrap")
+    "sync-command" "title" "wrap" "unwrap" "args")
   "List of flag names for completion.")
 
 (defconst wks--hook-names

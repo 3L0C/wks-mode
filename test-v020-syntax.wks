@@ -262,3 +262,11 @@ w "Window prefix"
 # Even with :var %(key) +flag ^hook %{{cmd}} inside
 
 # End of test file
+
+# =============================================================================
+# 16. ARGS
+# =============================================================================
+p "Parent" +args "outer0" "outer1"
+{
+    i "Inner" +args "inner0" %{{%($0) %($1)}} # inner0 outer1
+}
