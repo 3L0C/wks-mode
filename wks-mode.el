@@ -43,7 +43,6 @@
 ;; - Interactive commands for compiling and running
 ;; - Completion for macros, flags, hooks, and interpolations
 ;; - Flymake integration for real-time syntax checking
-;; - Electric pair mode for auto-pairing brackets and quotes
 ;;
 ;; Installation:
 ;;
@@ -851,14 +850,7 @@ REPORT-FN is a callback function to report diagnostics."
 
   ;; Flymake
   (when (executable-find wks-command)
-    (add-hook 'flymake-diagnostic-functions #'wks-flymake nil t))
-
-  ;; Electric pairs
-  (setq-local electric-pair-pairs
-              '((?{ . ?})
-                (?\[ . ?\])
-                (?\( . ?\))
-                (?\" . ?\)))))
+    (add-hook 'flymake-diagnostic-functions #'wks-flymake nil t)))
 
 ;; Associate `.wks' extension with `wks-mode'.
 ;;;###autoload
