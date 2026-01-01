@@ -250,19 +250,19 @@
    (should (eq (get-text-property (match-beginning 0) 'face)
                font-lock-constant-face))))
 
-(ert-deftest wks-mode-test-font-lock-color-aliases ()
-  "Test that color alias macros are highlighted."
+(ert-deftest wks-mode-test-font-lock-color-macros ()
+  "Test that color macros are highlighted."
   (wks-test-with-temp-buffer
-   ":fg-color \"#ffffff\"\n:bg-color \"#000000\"\n:bd-color \"#333333\""
+   ":fg \"#ffffff\"\n:bg \"#000000\"\n:bd \"#333333\""
    (font-lock-ensure)
-   (search-forward "fg-color")
-   (should (eq (get-text-property (match-beginning 0) 'face)
+   (search-forward ":fg")
+   (should (eq (get-text-property (+ (match-beginning 0) 1) 'face)
                font-lock-preprocessor-face))
-   (search-forward "bg-color")
-   (should (eq (get-text-property (match-beginning 0) 'face)
+   (search-forward ":bg")
+   (should (eq (get-text-property (+ (match-beginning 0) 1) 'face)
                font-lock-preprocessor-face))
-   (search-forward "bd-color")
-   (should (eq (get-text-property (match-beginning 0) 'face)
+   (search-forward ":bd")
+   (should (eq (get-text-property (+ (match-beginning 0) 1) 'face)
                font-lock-preprocessor-face))))
 
 (ert-deftest wks-mode-test-font-lock-keep-delay ()
@@ -451,7 +451,7 @@
           (table (nth 2 result))
           (candidates (all-completions "" table)))
      (should (member "unsorted" candidates))
-     (should (member "fg-color" candidates))
+     (should (member "fg" candidates))
      (should (member "keep-delay" candidates)))))
 
 (ert-deftest wks-mode-test-completion-flags-updated ()
