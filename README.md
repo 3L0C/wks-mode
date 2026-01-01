@@ -85,6 +85,29 @@ respectively.
 (use-package! wks-mode)
 ```
 
+# Configuration
+
+## Auto-pairing for angle brackets
+
+wks-mode does not configure auto-pairing to avoid conflicts with user
+preferences. To enable auto-pairing for `<>` (used in key options), add
+one of the following to your configuration:
+
+### electric-pair-mode
+
+``` emacs-lisp
+(add-hook 'wks-mode-hook
+  (lambda ()
+    (setq-local electric-pair-pairs
+                (append electric-pair-pairs '((?< . ?>))))))
+```
+
+### smartparens
+
+``` emacs-lisp
+(sp-local-pair 'wks-mode "<" ">")
+```
+
 # Acknowledgments
 
 My thanks to 
