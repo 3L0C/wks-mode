@@ -238,7 +238,7 @@ to prevent syntax elements from being highlighted in comments."
   `(
     ;; Preprocessor switch macros (no arguments)
     (,(rx (seq ":"
-               (group (or "debug" "unsorted" "top" "bottom"))
+               (group (or "debug" "unsorted" "top" "bottom" "center"))
                (or space eol)))
      (1 font-lock-preprocessor-face))
 
@@ -613,7 +613,7 @@ This function is adapted from `zig-mode'."
 (defconst wks--macro-names
   '("include" "var" "fg-key" "fg-delimiter" "fg-prefix" "fg-chord"
     "fg-title" "fg-goto" "fg" "bg" "bd"
-    "shell" "font" "title-font" "debug" "unsorted" "top" "bottom"
+    "shell" "font" "title-font" "debug" "unsorted" "top" "bottom" "center"
     "menu-width" "menu-gap" "max-columns" "border-width"
     "width-padding" "height-padding" "delay" "keep-delay"
     "border-radius" "table-padding" "implicit-array-keys")

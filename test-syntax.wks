@@ -26,6 +26,7 @@
 :debug
 :top
 :bottom
+:center
 :menu-width 800
 :menu-gap -1
 :table-padding 10
